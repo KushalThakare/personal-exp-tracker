@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Personal Expense Tracker{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Expense Dashboard</h1>
+    <p class="page-subtitle">Track, monitor, and manage your daily spending in Indian Rupees (₹)</p>
+  </div>
+  <div>
+    <a href="{% url 'expense_create' %}" class="btn btn-primary">
+      <span>➕</span> Add Expense
+    </a>
+  </div>
+</div>
+
+<!-- Attractive Summary Cards -->
+<div class="cards-grid">
+  <!-- Total Lifetime Expenses Card -->
+  <div class="stat-card card-blue">
+    <div class="stat-info">
+      <span class="stat-label">Total Expenses</span>
+      <div class="stat-value">₹{{ total_expenses|floatformat:2 }}</div>
+      <div class="stat-subtext">
+        <span>📈 Lifetime recorded spending</span>
+      </div>
+    </div>
+    <div class="stat-icon-wrapper blue" title="Total Expenses">
+      ₹
+    </div>
+  </div>
+
+  <!-- Current Month Expenses Card -->
+  <div class="stat-card card-green">
+    <div class="stat-info">
+      <span class="stat-label">{{ current_month_name }}</span>
+      <div class="stat-value">₹{{ monthly_expenses|floatformat:2 }}</div>
+      <div class="stat-subtext">
+        <span>📅 Current month spending</span>
+      </div>
+    </div>
+    <div class="stat-icon-wrapper green" title="Current Month">
+      🗓️
+    </div>
+  </div>
+
+  <!-- Total Transactions Card -->
+  <div class="stat-card card-purple">
+    <div class="stat-info">
+      <span class="stat-label">Total Transactions</span>
+      <div class="stat-value">{{ total_transactions }}</div>
+      <div class="stat-subtext">
+        <span>🧾 Total expense entries</span>
+      </div>
+    </div>
+    <div class="stat-icon-wrapper purple" title="Total Transactions">
+      💳
+    </div>
+  </div>
+</div>
+
+<!-- Main Dashboard Grid -->
+<div class="dashboard-grid">
+  <!-- Recent Expenses Table Card -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span>🕒</span> Recent Expenses
+      </h2>
+      <a href="{% url 'expense_list' %}" class="btn btn-secondary btn-sm">
+        View All History &rarr;
+      </a>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      {% if recent_expenses %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Expense Title</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th style="text-align: right;">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for exp in recent_expenses %}
+                <tr>
+                  <td>
+                    <div class="exp-title">{{ exp.title }}</div>
+                    {% if exp.description %}
+                      <div class="exp-desc">{{ exp.description|truncatechars:40 }}</div>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="badge badge-{{ exp.category }}">
+                      {% if exp.category == 'Food' %}🍔
+                      {% elif exp.category == 'Travel' %}✈️
+                      {% elif exp.category == 'Shopping' %}🛍️
+                      {% elif exp.category == 'Education' %}📚
+                      {% elif exp.category == 'Entertainment' %}🎬
+                      {% else %}🏷️{% endif %}
+                      {{ exp.category }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="exp-date">{{ exp.date|date:"d M Y" }}</span>
+                  </td>
+                  <td class="amount-cell" style="text-align: right;">
+                    ₹{{ exp.amount|floatformat:2 }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <!-- Friendly Empty State -->
+        <div class="empty-state">
+          <div class="empty-state-illustration">💸</div>
+          <h3>No expenses recorded yet</h3>
+          <p>Start tracking your expenses by adding your first daily transaction.</p>
+          <a href="{% url 'expense_create' %}" class="btn btn-primary">
+            <span>➕</span> Record Your First Expense
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Category Breakdown & Visual Chart -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span>📊</span> Spending by Category
+      </h2>
+    </div>
+    <div class="card-body">
+      {% if category_summary %}
+        <!-- Chart.js Doughnut -->
+        <div style="max-width: 240px; margin: 0 auto 1.5rem auto;">
+          <canvas id="categoryChart" width="220" height="220"></canvas>
+        </div>
+
+        <!-- Breakdown List with Category Icons & Percentages -->
+        <div class="cat-breakdown-list">
+          {% for item in category_summary %}
+            <div>
+              <div class="cat-item-header">
+                <div>
+                  <span class="badge badge-{{ item.category }}">
+                    {% if item.category == 'Food' %}🍔
+                    {% elif item.category == 'Travel' %}✈️
+                    {% elif item.category == 'Shopping' %}🛍️
+                    {% elif item.category == 'Education' %}📚
+                    {% elif item.category == 'Entertainment' %}🎬
+                    {% else %}🏷️{% endif %}
+                    {{ item.category }}
+                  </span>
+                  <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.35rem;">
+                    ({{ item.count }} txn{{ item.count|pluralize }})
+                  </span>
+                </div>
+                <div style="font-weight: 700; color: var(--text-main); font-size: 0.925rem;">
+                  ₹{{ item.total|floatformat:2 }}
+                  <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">
+                    ({{ item.percentage }}%)
+                  </span>
+                </div>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill progress-{{ item.category }}" style="width: {{ item.percentage }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- Friendly Empty State for Category Data -->
+        <div class="empty-state" style="padding: 2.5rem 1rem;">
+          <div class="empty-state-illustration">📊</div>
+          <h3>No category data yet</h3>
+          <p>Add your first expenses to see category-wise percentages and analytics.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{% if category_summary %}
+<!-- Chart.js CDN for interactive spending breakdown -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  (function() {
+    const ctx = document.getElementById('categoryChart');
+    if (!ctx) return;
+
+    const labels = {{ chart_labels_json|safe }};
+    const dataValues = {{ chart_values_json|safe }};
+
+    const categoryColorMap = {
+      'Food': '#f97316',
+      'Travel': '#0284c7',
+      'Shopping': '#9333ea',
+      'Education': '#059669',
+      'Entertainment': '#db2777',
+      'Other': '#64748b'
+    };
+
+    const backgroundColors = labels.map(label => categoryColorMap[label] || '#2563eb');
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: dataValues,
+          backgroundColor: backgroundColors,
+          borderWidth: 3,
+          borderColor: '#ffffff',
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const val = context.parsed || 0;
+                return ' ' + context.label + ': ₹' + val.toLocaleString('en-IN', { minimumFractionDigits: 2 });
+              }
+            }
+          }
+        },
+        cutout: '68%'
+      }
+    });
+  })();
+</script>
+{% endif %}
+{% endblock %}

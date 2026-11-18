@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}All Expenses - Personal Expense Tracker{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Expense History</h1>
+    <p class="page-subtitle">View, filter, edit, and organize all your expense records</p>
+  </div>
+  <div>
+    <a href="{% url 'expense_create' %}" class="btn btn-primary">
+      <span>➕</span> Add Expense
+    </a>
+  </div>
+</div>
+
+<!-- Category Filter Bar -->
+<div class="filter-bar">
+  <div class="filter-group">
+    <span class="filter-label">Filter Category:</span>
+    <div class="filter-pills">
+      <a href="{% url 'expense_list' %}" class="filter-pill {% if not selected_category or selected_category == 'All' %}active{% endif %}">
+        <span>🌐</span> All
+      </a>
+      {% for cat in categories %}
+        <a href="{% url 'expense_list' %}?category={{ cat }}" class="filter-pill {% if selected_category == cat %}active{% endif %}">
+          <span>
+            {% if cat == 'Food' %}🍔
+            {% elif cat == 'Travel' %}✈️
+            {% elif cat == 'Shopping' %}🛍️
+            {% elif cat == 'Education' %}📚
+            {% elif cat == 'Entertainment' %}🎬
+            {% else %}🏷️{% endif %}
+          </span>
+          {{ cat }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="font-size: 0.9rem; color: var(--text-muted);">
+    <span>Showing <strong>{{ filtered_count }}</strong> record{{ filtered_count|pluralize }}</span> &bull; 
+    <span>Total: <strong style="color: var(--primary); font-size: 1rem;">₹{{ filtered_total|floatformat:2 }}</strong></span>
+  </div>
+</div>
+
+<!-- Expenses Table Card -->
+<div class="card">
+  <div class="card-body" style="padding: 0;">
+    {% if expenses %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Date</th>
+              <th>Expense Details</th>
+              <th>Category</th>
+              <th style="text-align: right; width: 150px;">Amount (₹)</th>
+              <th style="text-align: center; width: 170px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for exp in expenses %}
+              <tr>
+                <td>
+                  <span class="exp-date">{{ exp.date|date:"d M Y" }}</span>
+                </td>
+                <td>
+                  <div class="exp-title">{{ exp.title }}</div>
+                  {% if exp.description %}
+                    <div class="exp-desc">{{ exp.description }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge badge-{{ exp.category }}">
+                    {% if exp.category == 'Food' %}🍔
+                    {% elif exp.category == 'Travel' %}✈️
+                    {% elif exp.category == 'Shopping' %}🛍️
+                    {% elif exp.category == 'Education' %}📚
+                    {% elif exp.category == 'Entertainment' %}🎬
+                    {% else %}🏷️{% endif %}
+                    {{ exp.category }}
+                  </span>
+                </td>
+                <td class="amount-cell" style="text-align: right;">
+                  ₹{{ exp.amount|floatformat:2 }}
+                </td>
+                <td style="text-align: center; white-space: nowrap;">
+                  <a href="{% url 'expense_update' exp.pk %}" class="btn btn-secondary btn-sm" title="Edit this expense">
+                    ✏️ Edit
+                  </a>
+                  <a href="{% url 'expense_delete' exp.pk %}" class="btn btn-outline-danger btn-sm" title="Delete this expense" style="margin-left: 0.35rem;">
+                    🗑️ Delete
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <!-- Friendly Empty State -->
+      <div class="empty-state">
+        <div class="empty-state-illustration">
+          {% if selected_category %}🔍{% else %}📝{% endif %}
+        </div>
+        <h3>No expenses found</h3>
+        {% if selected_category %}
+          <p>You haven't recorded any expenses under the "<strong>{{ selected_category }}</strong>" category yet.</p>
+          <a href="{% url 'expense_list' %}" class="btn btn-secondary btn-sm">
+            &larr; View All Categories
+          </a>
+        {% else %}
+          <p>Your expense log is currently empty. Start by recording your daily spending.</p>
+          <a href="{% url 'expense_create' %}" class="btn btn-primary">
+            <span>➕</span> Add Your First Expense
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Personal Expense Tracker{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation Bar (Clean Blue & White Theme) -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="{% url 'dashboard' %}" class="brand" title="Personal Expense Tracker">
+        <div class="brand-icon-wrapper">₹</div>
+        <span class="brand-title">Expense<span class="brand-accent">Tracker</span></span>
+      </a>
+
+      <ul class="nav-links">
+        <li>
+          <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <span>📊</span> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'expense_list' %}" class="nav-link {% if request.resolver_match.url_name == 'expense_list' %}active{% endif %}">
+            <span>🧾</span> Expenses
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'expense_create' %}" class="btn btn-primary btn-sm">
+            <span>➕</span> Add Expense
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+    <!-- Flash Feedback Messages -->
+    {% if messages %}
+      <div class="messages-container">
+        {% for message in messages %}
+          <div class="alert {% if message.tags == 'success' %}alert-success{% elif message.tags == 'error' %}alert-danger{% else %}alert-info{% endif %}">
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- Clean Minimalist Footer -->
+  <footer class="footer">
+    <p>Personal Expense Tracker &bull; Django &amp; SQLite Back-End Project &bull; Meta Developer Certificate Case Study</p>
+  </footer>
+
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

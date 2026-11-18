@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} - Personal Expense Tracker{% endblock %}
+
+{% block content %}
+<div class="form-card">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        {% if is_edit %}
+          <span>✏️</span> Edit Expense
+        {% else %}
+          <span>➕</span> Add New Expense
+        {% endif %}
+      </h2>
+      <a href="{% url 'expense_list' %}" class="btn btn-secondary btn-sm">
+        &larr; Back to List
+      </a>
+    </div>
+
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <!-- Expense Title -->
+        <div class="form-group">
+          <label class="form-label" for="{{ form.title.id_for_label }}">
+            {{ form.title.label }} <span style="color: var(--danger);">*</span>
+          </label>
+          {{ form.title }}
+          {% if form.title.errors %}
+            <ul class="form-errors">
+              {% for error in form.title.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        <!-- Amount and Category (Grid) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+          <!-- Amount -->
+          <div class="form-group">
+            <label class="form-label" for="{{ form.amount.id_for_label }}">
+              {{ form.amount.label }} <span style="color: var(--danger);">*</span>
+            </label>
+            {{ form.amount }}
+            {% if form.amount.errors %}
+              <ul class="form-errors">
+                {% for error in form.amount.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label class="form-label" for="{{ form.category.id_for_label }}">
+              {{ form.category.label }} <span style="color: var(--danger);">*</span>
+            </label>
+            {{ form.category }}
+            {% if form.category.errors %}
+              <ul class="form-errors">
+                {% for error in form.category.errors %}
+                  <li>{{ error }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Expense Date -->
+        <div class="form-group">
+          <label class="form-label" for="{{ form.date.id_for_label }}">
+            {{ form.date.label }} <span style="color: var(--danger);">*</span>
+          </label>
+          {{ form.date }}
+          {% if form.date.errors %}
+            <ul class="form-errors">
+              {% for error in form.date.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        <!-- Optional Description -->
+        <div class="form-group">
+          <label class="form-label" for="{{ form.description.id_for_label }}">
+            {{ form.description.label }}
+          </label>
+          {{ form.description }}
+          <div class="form-help">Optional: Add notes, payment mode, vendor or store name.</div>
+          {% if form.description.errors %}
+            <ul class="form-errors">
+              {% for error in form.description.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+
+        <!-- Form Actions (Rounded buttons) -->
+        <div class="form-actions">
+          <a href="{% url 'expense_list' %}" class="btn btn-secondary">
+            Cancel
+          </a>
+          <button type="submit" class="btn btn-primary">
+            {% if is_edit %}
+              <span>💾</span> Save Changes
+            {% else %}
+              <span>➕</span> Add Expense
+            {% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
